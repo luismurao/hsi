@@ -1,0 +1,27 @@
+Package: hsi
+Type: Package
+Title: hdm: "Habitat distribution models"
+Version: 0.1.6
+Author: Luis Osorio-Olvera, Mariana Munguia, Julián Equihua, Tere Ortiz
+Maintainer: Luis Osorio-Olvera <luismurao@gmail.com>
+Description: Habitat-temporal distribution models.
+License: MIT 
+Encoding: UTF-8
+LazyData: true
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+Imports:
+    MASS,
+    raster,
+    purrr,
+    dplyr,
+    rgdal,
+    stringr,
+    sp,
+    magrittr,
+    rgl,
+    parallel
+Encoding: UTF-8
+LazyData: true
