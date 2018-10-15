@@ -1,8 +1,15 @@
 Package: hsi
 Type: Package
-Title: hsi: "Habitat suitability index"
+Title: "Habitat suitability index"
 Version: 0.2.5
-Author: Luis Osorio-Olvera, Mariana Munguia, Julian Equihua, Tere Ortiz, Oliver Lopez-Corona.
+Date: 2018-10-14
+Authors@R: as.person(c(
+                        "Luis Osorio-Olvera <luimurao@gmail.com> [aut, cre]",
+                        "Mariana Munguia <mmunguia@conabio.gob.mx> [aut]",
+                        "Julian Equihua <jequihua@conabio.gob.mx> [aut]",
+                        "Teresa Ortiz <teresa.ortiz.mancera@gmail.com> [aut]",
+                        "Oliver Lopez-Corona <lopezoliverx@otrasenda.org> [aut]"
+                        ))
 Maintainer: Luis Osorio-Olvera <luismurao@gmail.com>
 Description: Habitat-temporal distribution models.
 BugReports: https://github.com/luismurao/hsi/issues
