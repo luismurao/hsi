@@ -7,195 +7,133 @@
 #' @param E - Amount of error admissible along the Y-axis, given the requirements and conditions of the study (by default =.05). Value should range between 0 - 1
 #' @param RandomPercent - Occurrence points to be sampled randomly from the test data for bootstrapping.
 #' @param NoOfIteration - Number of iteration for bootstrapping
+#' @param parallel Logical to specify if the computation will be done in parallel. default=TRUE.
 #' @return OutputFile will have 4 columns, IterationNo, AUC_at_specified_value, AUC_AT_Random, AUC_Ratio. The first row will always have 0 th interation
 #' which is the actual Area Under the Curve without bootstrapping. And the rest of the rows contains auc ratio for all the bootstrap.
+#' @importFrom purrr map_df
+#' @importFrom future %<-%
+#' @importFrom magrittr %>%
+#' @importFrom grDevices dev.off pdf
+#' @importFrom graphics "barplot" "par" "text"
+#' @importFrom stats density lm
+#' @importFrom utils capture.output combn write.csv
+#' @import future
+#' @importFrom stats na.omit
+#' @useDynLib hsi
+#' @import dplyr
 #' @export
 
 
 PartialROC <- function(valData, PredictionFile, E = 0.05,
-                        RandomPercent, NoOfIteration)
+                        RandomPercent, NoOfIteration,parallel=FALSE)
 {
 
-  OmissionVal <- E
-  #OutMat = matrix(0,nrow=NoOfIteration+1, ncol = 4)
-  InRast = PredictionFile
-  resacale_ras <- 10/raster::cellStats(InRast,max)
-  ## Currently fixing the number of classes to 100. But later flexibility should be given in the parameter.
-  InRast = round(InRast * resacale_ras)
-  ClassPixels <- AreaPredictedPresence(InRast)
-  Occur <- valData
-  Occur = Occur[,-1]
-  ExtRast = raster::extract(InRast, Occur)
+  test_data <- valData[,2:3]
+  continuos_mod <- PredictionFile
+  E_percent <- E*100
+  boost_percent <- RandomPercent
+  n_iter <- NoOfIteration
 
-  OccurTbl = cbind(Occur, ExtRast)
-  OccurTbl = OccurTbl[which(is.na(OccurTbl[,3]) == FALSE),]
-
-  PointID = seq(1:nrow(OccurTbl))
-  OccurTbl = cbind(PointID, OccurTbl)
-  names(OccurTbl)= c("PointID", "Longitude",
-                     "Latitude", "ClassID")
-
-  output_auc <- parallel::mclapply( 1:(NoOfIteration),
-                                    function(x) auc_comp(x,OccurTbl,
-                                                         RandomPercent,
-                                                         OmissionVal,
-                                                         ClassPixels))
-  pRoc <- data.frame(t(sapply(output_auc,c)))
-  return( pRoc)
-}
-
-
-
-#' Helper function to compute partial AUC, AUC ratio.
-#' @param IterationNo number of iteration to compute partial AUC values
-#' @param OccurTbl Validation data. Must have 3 columns SpName, Longitude, Latitude.
-#' @param RandomPercent Occurrence points to be sampled randomly from the test data for bootstrapping.
-#' @param OmissionVal 1-E.
-#' @param ClassPixels Pixel classes.
-
-auc_comp <- function(IterationNo,OccurTbl,RandomPercent,OmissionVal,ClassPixels){
-  ClassID <- NULL
-  n <- NULL
-  OccuSumBelow <- NULL
-
-  if (IterationNo > 0){
-    ll = sample(nrow(OccurTbl),
-                round(RandomPercent/100 * nrow(OccurTbl)),
-                replace=TRUE)
-    OccurTbl1 = OccurTbl[ll,]
-  }
-  else
-    OccurTbl1 = OccurTbl
-  OccurINClass <- OccurTbl1 %>% dplyr::group_by(ClassID) %>%
-    dplyr::count() %>% dplyr::arrange(dplyr::desc(ClassID))
-  OccurINClass <- OccurINClass %>%
-    dplyr::ungroup() %>% dplyr::mutate(OccuSumBelow= cumsum(n)) %>%
-    dplyr::mutate(Percent= OccuSumBelow/nrow(OccurTbl1))
-  OccurINClass <- as.data.frame(OccurINClass)
-
-  names(OccurINClass) = c("ClassID","OccuCount",
-                          "OccuSumBelow", "Percent")
-
-  XYTable = GenerateXYTableb(ClassPixels,OccurINClass)
-  AreaRow = CalculateAUC(XYTable, OmissionVal, IterationNo)
-
-  names(AreaRow) <- c( "IterNum","AUC_at_Value_0.95",
-                       "AUC_at_0.5", "AUC_ratio")
-  return(AreaRow)
-}
-
-
-#' Helper function to compute the area (number of pixels) that a certain threshold has.
-#' @param InRast A raster class object of a continuous model output.
-
-AreaPredictedPresence <- function(InRast)
-{
-  ### Now calculate proportionate area predicted under each suitability
-  ClassPixels = raster::freq(InRast)
-  ### Remove the NA pixels from the table.
-  if (is.na(ClassPixels[dim(ClassPixels)[1],1])== TRUE)
-  {
-    ClassPixels = ClassPixels[-dim(ClassPixels)[1],]
+  if(continuos_mod@data@min == continuos_mod@data@max){
+    stop("\nModel with no variability.\n")
   }
 
-  ClassPixels = ClassPixels[order(nrow(ClassPixels):1),]
-  TotPixPerClass = cumsum(ClassPixels[,2])
-  PercentPixels = TotPixPerClass / sum(ClassPixels[,2])
+  continuos_mod <-round((continuos_mod/raster::cellStats(continuos_mod,
+                                                         max)) * 1000)
+  test_value <- raster::extract(continuos_mod,test_data)
+  test_value <- na.omit( test_value)
+  #test_value <- unique(test_value)
+  classpixels <- data.frame(raster::freq(continuos_mod))
+  classpixels <- data.frame(stats::na.omit(classpixels))
 
-  ClassPixels = cbind(ClassPixels, TotPixPerClass, PercentPixels)
-  ClassPixels = ClassPixels[order(nrow(ClassPixels):1),]
-  return(ClassPixels)
-}
-
-
-#' Helper function to compute the area (number of pixels) that a certain threshold has.
-#' @param ClassPixels Pixel threshold class .
-#' @param OccurINClass Ocurrence points that lies in a certain class.
-
-
-GenerateXYTableb <- function(ClassPixels,OccurINClass){
-  XYTable = data.frame(ClassPixels[,c(1,4)])
-  names(XYTable) <- c("ClassID","PercentPixels")
-  XYTable <-  suppressMessages(dplyr::full_join(XYTable,OccurINClass))
-
-  XYTable$Percent[1] <- 1
-  XYTable$Percent[is.na(XYTable$Percent)] <- OccurINClass[1,"Percent"]
-  XYTable <- XYTable[,c("ClassID","PercentPixels","Percent")]
-  XYTable <- rbind(XYTable,c(nrow(XYTable)+1,0,0))
-  names(XYTable) = c("ClassID", "XCoor", "YCoor")
-  return(XYTable)
-
-}
-
-#' Helper function to compute AUC (partialAUC, AUC at Random, AUC ratio) values
-#' @param XYTable A table with the output of the function GenerateXYTableb
-#' @param OmissionVal Omission value.
-#' @param IterationNo Number of boostrap interation.
-
-CalculateAUC <- function(XYTable, OmissionVal, IterationNo)
-{
-  ## if OmissionVal is 0, then calculate the complete area under the curve. Otherwise calculate only partial area
+  classpixels <- classpixels  %>% dplyr::mutate_(value= ~rev(value),
+                                                 count= ~rev(count),
+                                                 totpixperclass = ~cumsum(count),
+                                                 percentpixels= ~ totpixperclass/sum(count)) %>%
+    dplyr::arrange(value)
 
 
-  if (OmissionVal > 0)
-  {
-    PartialXYTable = XYTable[which(XYTable[,3] >= OmissionVal),]
-    ### Here calculate the X, Y coordinate for the parallel line to x-axis depending upon the OmissionVal
-    ### Get the classid which is bigger than the last row of the XYTable and get the XCor and Ycor for that class
-    ### So that slope of the line is calculated and then intersection point between line parallel to x-axis and passing through
-    ### ommissionval on Y-axis is calculated.
-    PrevXCor = XYTable[which(XYTable[,1]==PartialXYTable[nrow(PartialXYTable),1])+1,2]
-    PrevYCor = XYTable[which(XYTable[,1]==PartialXYTable[nrow(PartialXYTable),1])+1,3]
-    XCor1 = PartialXYTable[nrow(PartialXYTable),2]
-    YCor1 = PartialXYTable[nrow(PartialXYTable),3]
-    ## Calculate the point of intersection of line parallel to x-asiz and this line. Use the equation of line
-    ## in point-slope form y1 = m(x1-x2)+y2
-    Slope = (YCor1 - PrevYCor) / (XCor1 - PrevXCor)
-    YCor0 = OmissionVal
-    XCor0 = (YCor0 - PrevYCor + (Slope * PrevXCor)) / Slope
-    ### Add this coordinate in the PartialXYTable with classid greater than highest class id in the table.
-    ### Actually class-id is not that important now, only the place where we add this xcor0 and ycor0 is important.
-    ### add this as last row in the table
-    PartialXYTable = rbind(PartialXYTable,
-                           c(PartialXYTable[nrow(PartialXYTable),1]+1,
-                             XCor0, YCor0))
-  }
-  else
-  {
-    PartialXYTable = XYTable
-  } ### if OmissionVal > 0
+  error_sens <- 1-(E_percent/100)
+  models_thresholds <- classpixels[,"value"]
+  fractional_area <- classpixels[,"percentpixels"]
+  n_data <- length(test_value)
+  n_samp <- ceiling((boost_percent/100)*(n_data))
 
-  ## Now calculate the area under the curve on this table.
-  XCor1 = PartialXYTable[nrow(PartialXYTable),2]
-  YCor1 = PartialXYTable[nrow(PartialXYTable),3]
-  AUCValue = 0
-  AUCValueAtRandom = 0
-  for (i in (nrow(PartialXYTable)-1):1)
-  {
-    XCor2 = PartialXYTable[i,2]
-    YCor2 = PartialXYTable[i,3]
+  big_classpixels <- matrix(rep(models_thresholds,each=n_samp),
+                            ncol=length(models_thresholds))
 
-    # This is calculating the AUCArea for 2 point trapezoid.
-    TrapArea = (YCor1 * (abs(XCor2 - XCor1))) +
-      (abs(YCor2 - YCor1) * abs(XCor2 - XCor1)) / 2
-    AUCValue = AUCValue + TrapArea
-    # now caluclate the area below 0.5 line.
-    # Find the slope of line which goes to the point
-    # Equation of line parallel to Y-axis is X=k and equation of line at 0.5 is y = x
-    TrapAreaAtRandom = (XCor1 * (abs(XCor2 - XCor1))) +
-      (abs(XCor2 - XCor1) * abs(XCor2 - XCor1)) / 2
-    AUCValueAtRandom = AUCValueAtRandom + TrapAreaAtRandom
-    XCor1 = XCor2
-    YCor1 = YCor2
+
+  calc_aucDF <- function(big_classpixels,fractional_area,
+                         test_value,n_data,n_samp,error_sens){
+
+    rowsID <- sample(x = n_data,
+                     size = n_samp,
+                     replace=TRUE)
+    test_value1 <- test_value[rowsID]
+    omssion_matrix <-   big_classpixels >  test_value1
+    sensibility <- 1 - colSums(omssion_matrix)/n_samp
+    xyTable <- data.frame(fractional_area,sensibility)
+    less_ID <- which(xyTable$sensibility<=error_sens)
+    xyTable <- xyTable[-less_ID,]
+
+    xyTable <- xyTable[order(xyTable$fractional_area,
+                             decreasing = F),]
+
+    auc_pmodel <- trap_roc(xyTable$fractional_area,
+                           xyTable$sensibility)
+
+    auc_prand <- trap_roc(xyTable$fractional_area,
+                          xyTable$fractional_area)
+    auc_ratio <- auc_pmodel/auc_prand
+
+    auc_table <- data.frame(auc_pmodel,
+                            auc_prand,
+                            auc_ratio =auc_ratio )
+    return(auc_table)
 
   }
 
-  NewRow = c(IterationNo, AUCValue,
-             AUCValueAtRandom,
-             AUCValue/AUCValueAtRandom)
 
-  return(NewRow)
+  if(parallel){
+
+    future::plan(future::multiprocess)
+    roc_env <- new.env()
+    n_cores <- future::availableCores()
+    niter_big <- floor(n_iter/n_cores)
+    n_runs <- rep(niter_big,n_cores)
+    sum_n_runs <- sum(n_runs)
+    n_runs[1] <- n_runs[1] + (n_iter - sum_n_runs)
+
+    for(i in 1:length(n_runs)){
+      x <- as.character(i)
+      roc_env[[x]] %<-% {
+        x1 <- 1:n_runs[i]
+        auc_matrix1 <- x1 %>%
+          purrr::map_df(~calc_aucDF(big_classpixels,
+                                    fractional_area,
+                                    test_value,n_data,n_samp,
+                                    error_sens))
+      }
+    }
+    partial_AUC <- as.list(roc_env)
+    rm(roc_env)
+    partial_AUC <- do.call(rbind.data.frame,partial_AUC)
+    rownames(partial_AUC) <- NULL
+    future::plan(future::sequential)
+
+  }
+  else{
+
+    partial_AUC <- 1:n_iter %>%
+      purrr::map_df(~calc_aucDF(big_classpixels,
+                                fractional_area,
+                                test_value,n_data,n_samp,
+                                error_sens))
+
+  }
+  partial_AUC <- data.frame(NoOfIteration=1:NoOfIteration,partial_AUC)
+  return(partial_AUC)
+
 
 }
-
 
