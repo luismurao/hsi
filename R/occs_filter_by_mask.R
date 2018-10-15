@@ -1,6 +1,6 @@
 #' Function to filter ocurrence points of Species Temporal Data object (STD object)  by mask.
 #' @description This function filters ocurrence points of Species Temporal Data object (STD object)  by mask.
-#' @param this.species, Species Temporal Data object see \code{\link[hdm]{sp_temporal_data}}.
+#' @param this.species, Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.
 #' @param mask A binary raster to filter species occurrence data.
 #' @return Returns un  sp.temporal.modeling object (list) con las coordenadas de los puntos de presencia, los anios las observaciones, el path de las capas temporales.
 #' @export
