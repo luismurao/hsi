@@ -9,7 +9,7 @@
 clean_dup_by_year <- function(this_species,threshold){
   stopifnot(inherits(this_species, "sp.temporal.modeling"))
   df_occs_year <- this_species$occs_data
-
+  df_occs_year$this_species <- as.numeric(as.character(df_occs_year$years_in_occs))
   clean_by_year <- df_occs_year %>%
     split(.$years_in_occs,drop=T) %>%
     purrr::map_df(~clean_dup(data = .x,
