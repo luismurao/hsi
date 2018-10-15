@@ -5,11 +5,11 @@
 \title{Temporal projection of the best model.
 The function projects the niche model for the d}
 \usage{
-temporal_projection(this.species, save_dir, sp_mask, sp_name = "",
-  crs_model = NULL)
+temporal_projection(this_species, save_dir, sp_mask, sp_name = "",
+  crs_model = NULL, plot3d = FALSE)
 }
 \arguments{
-\item{this.species}{a "sp.temp.best.model" object see \code{\link[hdm]{find_best_model}}.}
+\item{this_species}{a "sp.temp.best.model" object see \code{\link[hsi]{find_best_model}}.}
 
 \item{save_dir}{Folder where the projected model results will be saved.}
 
@@ -18,6 +18,8 @@ temporal_projection(this.species, save_dir, sp_mask, sp_name = "",
 \item{sp_name}{The name of the modeled species.}
 
 \item{crs_model}{The crs of the projection layers.}
+
+\item{plot3d}{Logical. If the models  have 3 varibles an rgl plot will be shown}
 }
 \value{
 The output is contained in main directory called "temporal_modeling", it is arranged in subdirectories corresponding to each of the projected years. Each subdirectory has:
