@@ -4,23 +4,26 @@
 \alias{find_best_model}
 \title{Function to find the best n-dimensional ellipsoid model using Partial Roc as a performance criteria.}
 \usage{
-find_best_model(this.species, cor_threshold = 0.9, ellipsoid_level = 0.975,
-  nvars_to_fit = 3, E = 0.05, RandomPercent = 50, NoOfIteration = 1000)
+find_best_model(this_species, cor_threshold = 0.9,
+  ellipsoid_level = 0.975, nvars_to_fit = 3, plot3d = FALSE,
+  E = 0.05, RandomPercent = 50, NoOfIteration = 1000)
 }
 \arguments{
-\item{this.species, }{Species Temporal Environment "sp.temporal.env" object see \code{\link[hdm]{extract_by_year}}.}
+\item{this_species, }{Species Temporal Environment "sp.temporal.env" object see \code{\link[hsi]{extract_by_year}}.}
 
-\item{cor_threshold}{Threshold valuefrom which it is considered that the correlation is high see \code{\link[hdm]{correlation_finder}}.}
+\item{cor_threshold}{Threshold valuefrom which it is considered that the correlation is high see \code{\link[hsi]{correlation_finder}}.}
 
-\item{ellipsoid_level}{The proportion of points to be included inside the ellipsoid see \code{\link[hdm]{ellipsoidfit}}.}
+\item{ellipsoid_level}{The proportion of points to be included inside the ellipsoid see \code{\link[hsi]{ellipsoidfit}}.}
 
 \item{nvars_to_fit}{Number of variables that will be used to model.}
 
-\item{E}{Amount of error admissible for Partial Roc test (by default =.05). Value should range between 0 - 1. see \code{\link[hdm]{PartialROC}}}
+\item{plot3d}{Logical. If the models  have 3 varibles an rgl plot will be shown}
 
-\item{RandomPercent}{Occurrence points to be sampled in randomly for the boostrap of the Partial Roc test \code{\link[hdm]{PartialROC}}.}
+\item{E}{Amount of error admissible for Partial Roc test (by default =.05). Value should range between 0 - 1. see \code{\link[hsi]{PartialROC}}}
 
-\item{NoOfIteration}{Number of iteration for the bootstrapping of the Partial Roc test \code{\link[hdm]{PartialROC}}.}
+\item{RandomPercent}{Occurrence points to be sampled in randomly for the boostrap of the Partial Roc test \code{\link[hsi]{PartialROC}}.}
+
+\item{NoOfIteration}{Number of iteration for the bootstrapping of the Partial Roc test \code{\link[hsi]{PartialROC}}.}
 }
 \value{
 A "sp.temp.best.model" object with metadata of the best model given the performance of the Partial Roc test.

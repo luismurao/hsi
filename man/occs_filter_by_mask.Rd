@@ -7,7 +7,7 @@
 occs_filter_by_mask(this.species, mask)
 }
 \arguments{
-\item{this.species, }{Species Temporal Data object see \code{\link[hdm]{sp_temporal_data}}.}
+\item{this.species, }{Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.}
 
 \item{mask}{A binary raster to filter species occurrence data.}
 }

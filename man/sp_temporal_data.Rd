@@ -21,7 +21,7 @@ sp_temporal_data(occs = NA, longitude = NULL, latitude = NULL,
 
 \item{layers_ext}{Extension de los archivos de las capas raster.}
 
-\item{reclass_year_data}{Logico. Si TRUE aquellos datos cuyos registros no coincidan con los anios de las capas de modelamiento seran reclasificados.}
+\item{reclass_year_data}{Logical. If TRUE, occurrence data whose years are not in the environmental layers will be reclassified to the nearest year in the layers. Other wise they will not be used for modeling.}
 }
 \value{
 Returns un  sp.temporal.modeling object (list) con las coordenadas de los puntos de presencia, los anios las observaciones, el path de las capas temporales.

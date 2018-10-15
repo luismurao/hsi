@@ -4,10 +4,10 @@
 \alias{extract_by_year}
 \title{Extract environmental data by year.}
 \usage{
-extract_by_year(this.species, layers_pattern)
+extract_by_year(this_species, layers_pattern)
 }
 \arguments{
-\item{this.species, }{Species Temporal Data object see \code{\link[hdm]{sp_temporal_data}}.}
+\item{this_species, }{Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.}
 
 \item{layers_pattern}{A regular expression to indicate the pattern to search in layers files names.}
 }
