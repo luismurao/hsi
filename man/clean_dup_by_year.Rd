@@ -4,10 +4,10 @@
 \alias{clean_dup_by_year}
 \title{Function to clean duplicated coordinates data}
 \usage{
-clean_dup_by_year(this.species, threshold)
+clean_dup_by_year(this_species, threshold)
 }
 \arguments{
-\item{this.species, }{Species Temporal Data object see \code{\link[hdm]{sp_temporal_data}}.}
+\item{this_species, }{Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.}
 
 \item{threshold}{A numerc value representig the distance (in grades) between coordinates
 to be considered as a duplicate.}

@@ -1,27 +1,28 @@
 #' Temporal projection of the best model.
 #' The function projects the niche model for the d
-#' @param this.species a "sp.temp.best.model" object see \code{\link[hdm]{find_best_model}}.
+#' @param this_species a "sp.temp.best.model" object see \code{\link[hsi]{find_best_model}}.
 #' @param save_dir Folder where the projected model results will be saved.
 #' @param sp_mask A mask to crop the projected area of distribution.
 #' @param sp_name The name of the modeled species.
 #' @param crs_model The crs of the projection layers.
+#' @param plot3d Logical. If the models  have 3 varibles an rgl plot will be shown
 #' @return  The output is contained in main directory called "temporal_modeling", it is arranged in subdirectories corresponding to each of the projected years. Each subdirectory has:
 #' - Ellipsoid model plot. Only If the number of dimensions to model the niche where 2 or 3.
 #' - Binary model of distribution.
 #' - A continuos suitability raster.
 #' Finally a directory called niche_comparations_results, which has barplots of the percent of area/suitabilty gained (or lost) in each year compared to \code{t_0}.
 #' @export
-temporal_projection <- function(this.species,
+temporal_projection <- function(this_species,
                                 save_dir,sp_mask,sp_name="",
-                                crs_model=NULL){
-  stopifnot(inherits(this.species, "sp.temp.best.model"))
+                                crs_model=NULL, plot3d=FALSE){
+  stopifnot(inherits(this_species, "sp.temp.best.model"))
   if(is.null(crs_model)) crs_model <- "+proj=lcc +lat_1=17.5 +lat_2=29.5 +lat_0=12 +lon_0=-102 +x_0=2500000 +y_0=0 +datum=WGS84 +units=m +no_defs"
   extent_capas <- raster::extent(sp_mask)
-  projection_years <- names(this.species$layers_path_by_year)
-  projection_vars <- names(this.species$best_model_metadata$centroid)
-  ellip <- this.species$best_model_metadata
+  projection_years <- names(this_species$layers_path_by_year)
+  projection_vars <- names(this_species$best_model_metadata$centroid)
+  ellip <- this_species$best_model_metadata
   # Datos de presencia de la sp en el ambiente
-  occs_env <- this.species$env_data_train[,projection_vars]
+  occs_env <- this_species$env_data_train[,projection_vars]
 
   to_save_dir <- file.path(save_dir,paste0("temporal_modeling_",sp_name))
 
@@ -41,7 +42,7 @@ temporal_projection <- function(this.species,
 
   proyections <- lapply(projection_years,function(x){
 
-    layers <- this.species$layers_path_by_year[[x]]
+    layers <- this_species$layers_path_by_year[[x]]
     layers_index <-  unlist(lapply(projection_vars,function(x)
       stringr::str_which(string =layers,pattern = x)))
 
@@ -56,10 +57,11 @@ temporal_projection <- function(this.species,
     sp_model <- ellipsoidfit(data = model_layers,
                              centroid =ellip$centroid,
                              covar =  ellip$covariance,
-                             level = this.species$ellipsoid_level,
-                             threshold = 0.000001,size = 3)
+                             level = this_species$ellipsoid_level,
+                             threshold = 0.000001,size = 3,
+                             plot = plot3d)
 
-    if(length(ellip$centroid)==3){
+    if(length(ellip$centroid)==3 && plot3d){
       # Presencias de la sp en el ambiente
       rgl::points3d(occs_env,size=10)
 
@@ -86,7 +88,7 @@ temporal_projection <- function(this.species,
 
     raster_model <-sp_model$suitRaster*1
     suit_train <- raster::extract(raster_model,
-                          this.species$test_data[,this.species$lon_lat_vars])
+                          this_species$test_data[,this_species$lon_lat_vars])
     min_train_pres <- min(suit_train,na.rm = T)
 
     if(class(sp_mask)=="RasterLayer"){
@@ -105,7 +107,8 @@ temporal_projection <- function(this.species,
     binary_model_name <- paste0(year_dir,"/",sp_name,"_binary",".tif")
     niche_model_name <-  paste0(year_dir,"/",sp_name,"_niche",".pdf")
     niche_model_map <- paste0(year_dir,"/",sp_name,"_suitability",".tif")
-    rgl::rgl.postscript(niche_model_name,fmt = "pdf")
+    if(length(ellip$centroid)==3 && plot3d)
+      rgl::rgl.postscript(niche_model_name,fmt = "pdf")
     raster::writeRaster(binary_model, binary_model_name,overwrite=T)
     raster::writeRaster(raster_model,niche_model_map,overwrite=T)
 
@@ -139,7 +142,7 @@ temporal_projection <- function(this.species,
   years_barplot <- stringr::str_extract(string = binary_vars,pattern ="[0-9]+" )
 
 
-  year_to_search <- min(this.species$coords_env_data_all$ID_YEAR)
+  year_to_search <- min(this_species$coords_env_data_all$ID_YEAR)
 
   projection_years <- list.files(to_save_dir,
                                  recursive = F,pattern = "[0-9]+",
