@@ -6,8 +6,10 @@
 #' @param sp_year_var A time variable indicating the year of each observation.
 #' @param  layers_by_year_dir El directorio que contiene las carpetas donde estan las capas raster que se usaran para modelar; estas deben estar clasificadas por anio.
 #' @param layers_ext Extension de los archivos de las capas raster.
-#' @param reclass_year_data Logico. Si TRUE aquellos datos cuyos registros no coincidan con los anios de las capas de modelamiento seran reclasificados.
+#' @param reclass_year_data Logical. If TRUE, occurrence data whose years are not in the environmental layers will be reclassified to the nearest year in the layers. Other wise they will not be used for modeling.
 #' @return Returns un  sp.temporal.modeling object (list) con las coordenadas de los puntos de presencia, los anios las observaciones, el path de las capas temporales.
+#' @importFrom rgdal readOGR
+#' @importFrom raster raster stack
 #' @export
 
 sp_temporal_data <- function(occs=NA,longitude=NULL,latitude=NULL,sp_year_var=NA,
