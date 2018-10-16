@@ -79,10 +79,10 @@ PartialROC <- function(valData, PredictionFile, E = 0.05,
     xyTable <- xyTable[order(xyTable$fractional_area,
                              decreasing = F),]
 
-    auc_pmodel <- trap_roc(xyTable$fractional_area,
+    auc_pmodel <- trapozoid_roc(xyTable$fractional_area,
                            xyTable$sensibility)
 
-    auc_prand <- trap_roc(xyTable$fractional_area,
+    auc_prand <- trapozoid_roc(xyTable$fractional_area,
                           xyTable$fractional_area)
     auc_ratio <- auc_pmodel/auc_prand
 
