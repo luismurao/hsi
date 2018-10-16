@@ -26,6 +26,11 @@ find_best_model <- function(this_species,cor_threshold=0.9,
 
 
   env_train <- stats::na.omit(env_train[,-rm_layers])
+  cat("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+  cat("The total number of occurrence records that will be used for model validation is:",
+      length(env_train ), "\n")
+  cat("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
+
   cor_matrix <- stats::cor(env_train)
   find_cor   <- correlation_finder(cor_mat = cor_matrix,
                                    threshold = cor_threshold,
@@ -97,6 +102,8 @@ find_best_model <- function(this_species,cor_threshold=0.9,
                 metadata=ellip))
 
   })
+
+
   procs <- lapply(1:length(modelos),function(x) {
     proc <- modelos[[x]][[2]]
   })
