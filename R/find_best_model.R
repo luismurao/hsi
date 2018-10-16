@@ -37,6 +37,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
   cat("The total number of models to be tested are: ", dim(combinatoria_vars)[2],"...\n\n")
 
   env_layers <- raster::stack(this_species$layers_path_by_year[[paste0(year_to_search)]])
+
   modelos <- lapply(1:dim(combinatoria_vars)[2],function(x){
     cat("Doing model: ", x," of ", dim(combinatoria_vars)[2],"\n")
 
@@ -54,7 +55,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
                              centroid =ellip$centroid,
                              covar =  ellip$covariance,
                              level = ellipsoid_level,
-                             threshold = 0.000001,size = 3,
+                             size = 3,
                              plot = plot3d)
 
     if(length(ellip$centroid)==3 && plot3d){
@@ -109,7 +110,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
     return(media_model)
   })
 
-  best_model <-names(model_means)[which(model_means==max(model_means))]
+  best_model <-names(model_means)[which(model_means==max(model_means,na.rm = TRUE))]
 
   models_meta_data <- lapply(1:length(modelos), function(x){
     matadata <- modelos[[x]][[3]]
