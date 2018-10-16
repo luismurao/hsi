@@ -48,8 +48,9 @@ find_best_model <- function(this_species,cor_threshold=0.9,
 
     # Varaibles filtadas por combinatiria de las mas representativas
     vars_model <- cor_filter[combinatoria_vars[,x]]
-    ellip <- cov_center(env_train[,vars_model],
-                        level = ellipsoid_level ,vars = vars_model)
+    ellip <- try(cov_center(env_train[,vars_model],
+                        level = ellipsoid_level ,vars = vars_model),silent = T)
+    if(class(ellip)=="try-error") return()
 
     # Datos de presencia de la sp en el ambiente
     occs_env <- this_species$env_data_train[,vars_model]
