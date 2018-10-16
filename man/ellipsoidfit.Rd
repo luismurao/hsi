@@ -4,8 +4,8 @@
 \alias{ellipsoidfit}
 \title{Function fit an ellipsoid model}
 \usage{
-ellipsoidfit(data, centroid, covar, level = 0.95, threshold = 0.05,
-  plot = T, size, xlab1 = "niche var 1", ylab1 = "niche var 2",
+ellipsoidfit(data, centroid, covar, level = 0.95, plot = T, size,
+  xlab1 = "niche var 1", ylab1 = "niche var 2",
   zlab1 = "Suitability", ...)
 }
 \arguments{
@@ -16,9 +16,6 @@ ellipsoidfit(data, centroid, covar, level = 0.95, threshold = 0.05,
 \item{covar}{The shape matrix (covariance) of the ellipoid (see \code{\link[hsi]{cov_center}}).}
 
 \item{level}{The proportion of points  to be included inside the ellipsoid}
-
-\item{threshold}{Threshold value for the suitabilities to be cosidered as 0,
-by default all suiabilities <0.05 are cosidered as zeros}
 
 \item{plot}{Logical If True a plot of niche will be shown.}
 

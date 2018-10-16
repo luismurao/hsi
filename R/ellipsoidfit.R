@@ -5,8 +5,6 @@
 #' @param centroid A vector with the values of the centers of the ellipsoid (see \code{\link[hsi]{cov_center}}).
 #' @param covar The shape matrix (covariance) of the ellipoid (see \code{\link[hsi]{cov_center}}).
 #' @param level The proportion of points  to be included inside the ellipsoid
-#' @param threshold Threshold value for the suitabilities to be cosidered as 0,
-#' by default all suiabilities <0.05 are cosidered as zeros
 #' @param plot Logical If True a plot of niche will be shown.
 #' @param size The size of the points of the niche plot.
 #' @param xlab1 For x label for 2-dimensional histogram
@@ -33,7 +31,7 @@
 #' # plot(ellipsoidMod$suitRaster)
 
 ellipsoidfit <- function(data,centroid,covar,level=0.95,
-                         threshold=0.05,plot=T,size,
+                         plot=T,size,
                          xlab1="niche var 1",ylab1= "niche var 2",zlab1="Suitability",...){
 
   if(class(data)=="RasterStack" || class(data)=="RasterBrick"){
@@ -54,7 +52,7 @@ ellipsoidfit <- function(data,centroid,covar,level=0.95,
   }
   # Computing the suitabilities
   suits <- suit(data,medias = centroid,covMatrix = covar)
-  suits[suits<threshold] <- 0
+  #suits[suits<threshold] <- 0
 
   if(dim(data)[2]==2 && plot==TRUE){
 
