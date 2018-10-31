@@ -1,7 +1,7 @@
 Package: hsi
 Type: Package
 Title: "Habitat suitability index"
-Version: 0.2.5.1
+Version: 0.2.5.2
 Date: 2018-10-14
 Authors@R: as.person(c(
                         "Luis Osorio-Olvera <luimurao@gmail.com> [aut, cre]",
