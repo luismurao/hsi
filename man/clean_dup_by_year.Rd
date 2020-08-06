@@ -7,12 +7,14 @@
 clean_dup_by_year(this_species, threshold)
 }
 \arguments{
-\item{this_species, }{Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.}
+\item{this_species}{Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.}
 
 \item{threshold}{A numerc value representig the distance (in grades) between coordinates
 to be considered as a duplicate.}
 }
 \description{
-Clean duplicated longitude and latitude data by year using threshold distance
-             which is a distance
+Clean duplicated longitude and latitude data by year using a threshold distance.
+}
+\seealso{
+For the current version of this functions that work with data frames go to \code{\link[hsi]{clean_dup_by_year_df}}
 }

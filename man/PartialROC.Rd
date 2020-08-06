@@ -7,8 +7,14 @@ Function PartialROC generates the area under the curve values using bootstrap me
 continuous model outputs as compared to binary model outputs. This method is specially used for model trained using presence only data.
 For more details refer DOI: 10.1016/j.ecolmodel.2007.11.008 and check ENMGadgets \url{https://github.com/narayanibarve}.}
 \usage{
-PartialROC(valData, PredictionFile, E = 0.05, RandomPercent,
-  NoOfIteration, parallel = FALSE)
+PartialROC(
+  valData,
+  PredictionFile,
+  E = 0.05,
+  RandomPercent,
+  NoOfIteration,
+  parallel = FALSE
+)
 }
 \arguments{
 \item{valData}{- Occurence validation data. Must have 3 columns SpName, Longitude, Latitude.}

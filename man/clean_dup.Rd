@@ -13,7 +13,7 @@ clean_dup(data, longitude, latitude, threshold = 0)
 
 \item{latitude}{A character vector of the column name of latitude.}
 
-\item{threshold}{A numerc value representig the distance (in grades) between coordinates
+\item{threshold}{A numerc value representig the eculidean distance between coordinates
 to be considered as a duplicate.}
 }
 \value{
@@ -21,6 +21,12 @@ Returns a data.frame with coordinate data from species
 }
 \description{
 Clean duplicated longitude and latitude data using threshold distance
-             which is a distance (in grades) between points to be considered
+             which is a distance between points to be considered
              duplicates.
+}
+\examples{
+occ_rec <- read.csv(system.file("exdata/cardon_virtual.csv",
+                                 package = "hsi"))
+occ_clean <- hsi::clean_dup(occ_rec,longitude="x",
+                            latitude="y",threshold=0.5)
 }

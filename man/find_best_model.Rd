@@ -4,9 +4,18 @@
 \alias{find_best_model}
 \title{Function to find the best n-dimensional ellipsoid model using Partial Roc as a performance criteria.}
 \usage{
-find_best_model(this_species, cor_threshold = 0.9,
-  ellipsoid_level = 0.975, nvars_to_fit = 3, plot3d = FALSE,
-  E = 0.05, RandomPercent = 50, NoOfIteration = 1000)
+find_best_model(
+  this_species,
+  cor_threshold = 0.9,
+  ellipsoid_level = 0.975,
+  nvars_to_fit = 3,
+  plot3d = FALSE,
+  E = 0.05,
+  RandomPercent = 50,
+  NoOfIteration = 1000,
+  parallel = TRUE,
+  n_cores = 4
+)
 }
 \arguments{
 \item{this_species, }{Species Temporal Environment "sp.temporal.env" object see \code{\link[hsi]{extract_by_year}}.}
@@ -24,6 +33,10 @@ find_best_model(this_species, cor_threshold = 0.9,
 \item{RandomPercent}{Occurrence points to be sampled in randomly for the boostrap of the Partial Roc test \code{\link[hsi]{PartialROC}}.}
 
 \item{NoOfIteration}{Number of iteration for the bootstrapping of the Partial Roc test \code{\link[hsi]{PartialROC}}.}
+
+\item{parallel}{Logical argument to run computations in parallel. Default TRUE}
+
+\item{n_cores}{Number of cores to be used in parallelization. Default 4}
 }
 \value{
 A "sp.temp.best.model" object with metadata of the best model given the performance of the Partial Roc test.

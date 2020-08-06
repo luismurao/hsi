@@ -45,11 +45,11 @@ PartialROC <- function(valData, PredictionFile, E = 0.05,
   #test_value <- unique(test_value)
   classpixels <- data.frame(raster::freq(continuos_mod))
   classpixels <- data.frame(stats::na.omit(classpixels))
-
-  classpixels <- classpixels  %>% dplyr::mutate_(value= ~rev(value),
-                                                 count= ~rev(count),
-                                                 totpixperclass = ~cumsum(count),
-                                                 percentpixels= ~ totpixperclass/sum(count)) %>%
+  value <- count <- NULL
+  classpixels <- classpixels  %>% dplyr::mutate(value= rev(value),
+                                                count= rev(count),
+                                                totpixperclass = cumsum(count),
+                                                percentpixels= totpixperclass/sum(count)) %>%
     dplyr::arrange(value)
 
 

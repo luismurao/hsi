@@ -4,9 +4,15 @@
 \alias{sp_temporal_data}
 \title{Function create a Species Temporal Data object (STD object).}
 \usage{
-sp_temporal_data(occs = NA, longitude = NULL, latitude = NULL,
-  sp_year_var = NA, layers_by_year_dir = NA, layers_ext = "*.tif$",
-  reclass_year_data = TRUE)
+sp_temporal_data(
+  occs = NA,
+  longitude = NULL,
+  latitude = NULL,
+  sp_year_var = NA,
+  layers_by_year_dir = NA,
+  layers_ext = "*.tif$",
+  reclass_year_data = TRUE
+)
 }
 \arguments{
 \item{occs}{A data.frame or a SpatialPointsDataFrame with coordinates of the occurrence records. The data must have a time variable indicating the year of each observation.}

@@ -7,15 +7,18 @@
 #' @param E  Amount of error admissible for Partial Roc test (by default =.05). Value should range between 0 - 1. see \code{\link[hsi]{PartialROC}}
 #' @param RandomPercent Occurrence points to be sampled in randomly for the boostrap of the Partial Roc test \code{\link[hsi]{PartialROC}}.
 #' @param NoOfIteration Number of iteration for the bootstrapping of the Partial Roc test \code{\link[hsi]{PartialROC}}.
+#' @param parallel Logical argument to run computations in parallel. Default TRUE
+#' @param n_cores Number of cores to be used in parallelization. Default 4
 #' @return A "sp.temp.best.model" object with metadata of the best model given the performance of the Partial Roc test.
 #' @export
+#' @import future furrr
 
 find_best_model <- function(this_species,cor_threshold=0.9,
                             ellipsoid_level=0.975,nvars_to_fit=3,
                             plot3d=FALSE,
                             E = 0.05,
                             RandomPercent = 50,
-                            NoOfIteration=1000){
+                            NoOfIteration=1000,parallel=TRUE,n_cores=4){
   stopifnot(inherits(this_species, "sp.temporal.env"))
   n_nas <- floor(dim(this_species$env_data_train)[1]*0.1)
   env_train <- this_species$env_data_train
@@ -30,8 +33,9 @@ find_best_model <- function(this_species,cor_threshold=0.9,
   cat("The total number of occurrence records that will be used for model validation is:",
       length(env_train ), "\n")
   cat("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
+  numericIDs <- which(sapply(env_train, is.numeric))
+  cor_matrix <- stats::cor(env_train[,numericIDs])
 
-  cor_matrix <- stats::cor(env_train)
   find_cor   <- correlation_finder(cor_mat = cor_matrix,
                                    threshold = cor_threshold,
                                    verbose = F)
@@ -43,67 +47,131 @@ find_best_model <- function(this_species,cor_threshold=0.9,
 
   env_layers <- raster::stack(this_species$layers_path_by_year[[paste0(year_to_search)]])
 
-  modelos <- lapply(1:dim(combinatoria_vars)[2],function(x){
-    cat("Doing model: ", x," of ", dim(combinatoria_vars)[2],"\n")
+  if(parallel){
+    future::plan(tweak(multiprocess, workers = n_cores))
+    modelos <- 1:dim(combinatoria_vars)[2] %>%
+      furrr::future_map(function(x){
+        cat("Doing model: ", x," of ", dim(combinatoria_vars)[2],"\n")
 
-    # Varaibles filtadas por combinatiria de las mas representativas
-    vars_model <- cor_filter[combinatoria_vars[,x]]
-    ellip <- try(cov_center(env_train[,vars_model],
-                        level = ellipsoid_level ,vars = vars_model),silent = T)
-    if(class(ellip)=="try-error") return()
+        # Varaibles filtadas por combinatiria de las mas representativas
+        vars_model <- cor_filter[combinatoria_vars[,x]]
+        ellip <- try(cov_center(env_train[,vars_model],
+                                level = ellipsoid_level ,vars = vars_model),silent = T)
+        if(class(ellip)=="try-error") return()
 
-    # Datos de presencia de la sp en el ambiente
-    occs_env <- this_species$env_data_train[,vars_model]
+        # Datos de presencia de la sp en el ambiente
+        occs_env <- this_species$env_data_train[,vars_model]
 
-    # Ajuste del modelo de elipsoide
+        # Ajuste del modelo de elipsoide
 
-    sp_model <- ellipsoidfit(data = env_layers[[vars_model]],
-                             centroid =ellip$centroid,
-                             covar =  ellip$covariance,
-                             level = ellipsoid_level,
-                             size = 3,
-                             plot = plot3d)
+        sp_model <- ellipsoidfit(data = env_layers[[vars_model]],
+                                 centroid =ellip$centroid,
+                                 covar =  ellip$covariance,
+                                 level = ellipsoid_level,
+                                 size = 3,
+                                 plot = plot3d)
 
-    if(length(ellip$centroid)==3 && plot3d){
-      # Presencias de la sp en el ambiente
-      rgl::points3d(occs_env,size=10)
+        if(length(ellip$centroid)==3 && plot3d){
+          # Presencias de la sp en el ambiente
+          rgl::points3d(occs_env,size=10)
 
-      # Ejes del elipsoide
+          # Ejes del elipsoide
 
-      rgl::segments3d(x = ellip$axis_coordinates[[1]][,1],
-                 y = ellip$axis_coordinates[[1]][,2],
-                 z = ellip$axis_coordinates[[1]][,3],
-                 lwd=3)
+          rgl::segments3d(x = ellip$axis_coordinates[[1]][,1],
+                          y = ellip$axis_coordinates[[1]][,2],
+                          z = ellip$axis_coordinates[[1]][,3],
+                          lwd=3)
 
 
-      rgl::segments3d(x = ellip$axis_coordinates[[2]][,1],
-                 y = ellip$axis_coordinates[[2]][,2],
-                 z = ellip$axis_coordinates[[2]][,3],
-                 lwd=3)
+          rgl::segments3d(x = ellip$axis_coordinates[[2]][,1],
+                          y = ellip$axis_coordinates[[2]][,2],
+                          z = ellip$axis_coordinates[[2]][,3],
+                          lwd=3)
 
-      rgl::segments3d(x = ellip$axis_coordinates[[3]][,1],
-                 y = ellip$axis_coordinates[[3]][,2],
-                 z = ellip$axis_coordinates[[3]][,3],
-                 lwd=3)
+          rgl::segments3d(x = ellip$axis_coordinates[[3]][,1],
+                          y = ellip$axis_coordinates[[3]][,2],
+                          z = ellip$axis_coordinates[[3]][,3],
+                          lwd=3)
 
-    }
+        }
 
-    valData <- this_species$test_data[,c(1,2)]
-    valData$sp_name <- "sp"
-    valData <- valData[,c(3,1,2)]
-    p_roc<- PartialROC(valData = valData,
-                        PredictionFile = sp_model$suitRaster,
-                        E = E,
-                        RandomPercent = RandomPercent,
-                        NoOfIteration = NoOfIteration)
-    p_roc$model <- paste0(x)
+        valData <- this_species$test_data[,c(1,2)]
+        valData$sp_name <- "sp"
+        valData <- valData[,c(3,1,2)]
+        p_roc<- PartialROC(valData = valData,
+                           PredictionFile = sp_model$suitRaster,
+                           E = E,
+                           RandomPercent = RandomPercent,
+                           NoOfIteration = NoOfIteration)
+        p_roc$model <- paste0(x)
 
-    return(list(model = sp_model$suitRaster,
-                pRoc=p_roc[,c("auc_ratio","model")],
-                metadata=ellip))
+        return(list(model = sp_model$suitRaster,
+                    pRoc=p_roc[,c("auc_ratio","model")],
+                    metadata=ellip))
+      },.progress = TRUE)
+  }
+  else{
+    modelos <- lapply(1:dim(combinatoria_vars)[2],function(x){
+      cat("Doing model: ", x," of ", dim(combinatoria_vars)[2],"\n")
 
-  })
+      # Varaibles filtadas por combinatiria de las mas representativas
+      vars_model <- cor_filter[combinatoria_vars[,x]]
+      ellip <- try(cov_center(env_train[,vars_model],
+                              level = ellipsoid_level ,vars = vars_model),silent = T)
+      if(class(ellip)=="try-error") return()
 
+      # Datos de presencia de la sp en el ambiente
+      occs_env <- this_species$env_data_train[,vars_model]
+
+      # Ajuste del modelo de elipsoide
+
+      sp_model <- ellipsoidfit(data = env_layers[[vars_model]],
+                               centroid =ellip$centroid,
+                               covar =  ellip$covariance,
+                               level = ellipsoid_level,
+                               size = 3,
+                               plot = plot3d)
+
+      if(length(ellip$centroid)==3 && plot3d){
+        # Presencias de la sp en el ambiente
+        rgl::points3d(occs_env,size=10)
+
+        # Ejes del elipsoide
+
+        rgl::segments3d(x = ellip$axis_coordinates[[1]][,1],
+                        y = ellip$axis_coordinates[[1]][,2],
+                        z = ellip$axis_coordinates[[1]][,3],
+                        lwd=3)
+
+
+        rgl::segments3d(x = ellip$axis_coordinates[[2]][,1],
+                        y = ellip$axis_coordinates[[2]][,2],
+                        z = ellip$axis_coordinates[[2]][,3],
+                        lwd=3)
+
+        rgl::segments3d(x = ellip$axis_coordinates[[3]][,1],
+                        y = ellip$axis_coordinates[[3]][,2],
+                        z = ellip$axis_coordinates[[3]][,3],
+                        lwd=3)
+
+      }
+
+      valData <- this_species$test_data[,c(1,2)]
+      valData$sp_name <- "sp"
+      valData <- valData[,c(3,1,2)]
+      p_roc<- PartialROC(valData = valData,
+                         PredictionFile = sp_model$suitRaster,
+                         E = E,
+                         RandomPercent = RandomPercent,
+                         NoOfIteration = NoOfIteration)
+      p_roc$model <- paste0(x)
+
+      return(list(model = sp_model$suitRaster,
+                  pRoc=p_roc[,c("auc_ratio","model")],
+                  metadata=ellip))
+
+    })
+  }
 
   procs <- lapply(1:length(modelos),function(x) {
     proc <- modelos[[x]][[2]]

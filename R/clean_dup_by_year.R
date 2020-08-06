@@ -1,10 +1,11 @@
 #' Function to clean duplicated coordinates data
-#' @description Clean duplicated longitude and latitude data by year using threshold distance
-#'              which is a distance
-#' @param this_species, Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.
+#' @description Clean duplicated longitude and latitude data by year using a threshold distance.
+#' @param this_species Species Temporal Data object see \code{\link[hsi]{sp_temporal_data}}.
 #' @param threshold A numerc value representig the distance (in grades) between coordinates
 #'            to be considered as a duplicate.
+#' @seealso For the current version of this functions that work with data frames go to \code{\link[hsi]{clean_dup_by_year_df}}
 #' @export
+#'
 
 clean_dup_by_year <- function(this_species,threshold){
   stopifnot(inherits(this_species, "sp.temporal.modeling"))

@@ -5,8 +5,14 @@
 \title{Temporal projection of the best model.
 The function projects the niche model for the d}
 \usage{
-temporal_projection(this_species, save_dir, sp_mask, sp_name = "",
-  crs_model = NULL, plot3d = FALSE)
+temporal_projection(
+  this_species,
+  save_dir,
+  sp_mask,
+  sp_name = "",
+  crs_model = NULL,
+  plot3d = FALSE
+)
 }
 \arguments{
 \item{this_species}{a "sp.temp.best.model" object see \code{\link[hsi]{find_best_model}}.}

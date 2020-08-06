@@ -1,8 +1,8 @@
 Package: hsi
 Type: Package
 Title: "Habitat suitability index"
-Version: 0.2.5.2
-Date: 2018-10-14
+Version: 0.2.5.3
+Date: 2020-07-08
 Authors@R: as.person(c(
                         "Luis Osorio-Olvera <luimurao@gmail.com> [aut, cre]",
                         "Mariana Munguia <mmunguia@conabio.gob.mx> [aut]",
@@ -32,6 +32,7 @@ Imports:
     rgl,
     parallel,
     future,
+    furrr,
     Rcpp
 LinkingTo: Rcpp
-RoxygenNote: 6.1.0
+RoxygenNote: 7.1.1

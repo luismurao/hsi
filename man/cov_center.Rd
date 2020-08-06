@@ -27,3 +27,34 @@ the input data, ellipsoid volume, semi-axis length and axis coordinates.
 Function to compute the covariance matrix, the niche centroid and volume of an
 ellipsoid model. It uses the values of the niche variables of the ocurrences points.
 }
+\examples{
+\dontrun{
+cardon_data <- read.csv(system.file("exdata/cardon_virtual.csv",
+                                    package = "hsi"))
+cardon_ellipsoid <- cov_center(data=cardon_data, mve=TRUE, level=0.975,
+                               vars=c("bio5","bio6", "bio12"))
+# To obtain the coordinates of the ellipsoid's centroid run:
+print(cardon_ellipsoid$centroid)
+
+# To obtain the coordinates of the ellipsoid's minimum value covariance run:
+print(cardon_ellipsoid$covariance)
+
+# To obtain the coordinates of the ellipsoid's niche volume run:
+print(cardon_ellipsoid$niche_volume)
+
+# To obtain the coordinates of the ellipsoid's Semi Axis Length run:
+print(cardon_ellipsoid$SemiAxis_length)
+
+# To obtain the coordinates of the ellipsoid's coordinates run:
+print(cardon_ellipsoid$axis_coordinates)
+
+# To plot the ellipsoid with a 99\% of data conteined from the obtained
+# by minimim volume method
+library(rgl)
+ellipsoid_coor <- rgl::ellipse3d(x=cardon_ellipsoid$covariance,centre=cardon_ellipsoid$centroid,
+                                 level=0.99)
+
+rgl::plot3d(ellipsoid_coor, alpha=0.3)
+
+}
+}
