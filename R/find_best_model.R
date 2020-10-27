@@ -27,8 +27,9 @@ find_best_model <- function(this_species,cor_threshold=0.9,
     if(length(which(is.na(env_train[,x]))) > n_nas) return(x)
   } ))
 
-
-  env_train <- stats::na.omit(env_train[,-rm_layers])
+  if(!is.null(rm_layers)){
+     env_train <- stats::na.omit(env_train[,-rm_layers])
+  }
   cat("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
   cat("The total number of occurrence records that will be used for model validation is:",
       length(env_train ), "\n")
