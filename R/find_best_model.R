@@ -104,7 +104,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
                            E = E,
                            RandomPercent = RandomPercent,
                            NoOfIteration = NoOfIteration)
-        p_roc$model <- paste0(x)
+        p_roc$auc_pmodel <- paste0(x)
 
         return(list(model = sp_model$suitRaster,
                     pRoc=p_roc[,c("auc_ratio","auc_pmodel")],
@@ -165,7 +165,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
                          E = E,
                          RandomPercent = RandomPercent,
                          NoOfIteration = NoOfIteration)
-      p_roc$model <- paste0(x)
+      p_roc$auc_pmodel <- paste0(x)
 
       return(list(model = sp_model$suitRaster,
                   pRoc=p_roc[,c("auc_ratio","auc_pmodel")],
