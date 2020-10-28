@@ -107,7 +107,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
         p_roc$model <- paste0(x)
 
         return(list(model = sp_model$suitRaster,
-                    pRoc=p_roc[,c("auc_ratio","model")],
+                    pRoc=p_roc[,c("auc_ratio","auc_pmodel")],
                     metadata=ellip))
       },.progress = TRUE)
   }
