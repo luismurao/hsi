@@ -168,7 +168,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
       p_roc$model <- paste0(x)
 
       return(list(model = sp_model$suitRaster,
-                  pRoc=p_roc[,c("auc_ratio","model")],
+                  pRoc=p_roc[,c("auc_ratio","auc_pmodel")],
                   metadata=ellip))
 
     })
@@ -181,7 +181,7 @@ find_best_model <- function(this_species,cor_threshold=0.9,
   procs$model <- as.factor(procs$model)
 
   m1 <- lm(auc_ratio ~ model, data = procs)
-  model_means <- sapply(levels(procs$model), function(y){
+  model_means <- sapply(levels(procs$auc_pmodel), function(y){
     model_index <- which(procs$model == y)
     media_model <- mean(procs[model_index,1],na.rm=T)
     return(media_model)
