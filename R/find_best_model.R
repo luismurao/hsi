@@ -27,8 +27,9 @@ find_best_model <- function(this_species,cor_threshold=0.9,
     if(length(which(is.na(env_train[,x]))) > n_nas) return(x)
   } ))
 
-
-  env_train <- stats::na.omit(env_train[,-rm_layers])
+  if(!is.null(rm_layers)){
+     env_train <- stats::na.omit(env_train[,-rm_layers])
+  }
   cat("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
   cat("The total number of occurrence records that will be used for model validation is:",
       length(env_train ), "\n")
@@ -103,10 +104,10 @@ find_best_model <- function(this_species,cor_threshold=0.9,
                            E = E,
                            RandomPercent = RandomPercent,
                            NoOfIteration = NoOfIteration)
-        p_roc$model <- paste0(x)
+        p_roc$auc_pmodel <- paste0(x)
 
         return(list(model = sp_model$suitRaster,
-                    pRoc=p_roc[,c("auc_ratio","model")],
+                    pRoc=p_roc[,c("auc_ratio","auc_pmodel")],
                     metadata=ellip))
       },.progress = TRUE)
   }
@@ -164,10 +165,10 @@ find_best_model <- function(this_species,cor_threshold=0.9,
                          E = E,
                          RandomPercent = RandomPercent,
                          NoOfIteration = NoOfIteration)
-      p_roc$model <- paste0(x)
+      p_roc$auc_pmodel <- paste0(x)
 
       return(list(model = sp_model$suitRaster,
-                  pRoc=p_roc[,c("auc_ratio","model")],
+                  pRoc=p_roc[,c("auc_ratio","auc_pmodel")],
                   metadata=ellip))
 
     })
@@ -177,11 +178,11 @@ find_best_model <- function(this_species,cor_threshold=0.9,
     proc <- modelos[[x]][[2]]
   })
   procs <- do.call("rbind.data.frame",procs)
-  procs$model <- as.factor(procs$model)
+  procs$auc_pmodel <- as.factor(procs$auc_pmodel)
 
-  m1 <- lm(auc_ratio ~ model, data = procs)
-  model_means <- sapply(levels(procs$model), function(y){
-    model_index <- which(procs$model == y)
+  m1 <- lm(auc_ratio ~ auc_pmodel, data = procs)
+  model_means <- sapply(levels(procs$auc_pmodel), function(y){
+    model_index <- which(procs$auc_pmodel == y)
     media_model <- mean(procs[model_index,1],na.rm=T)
     return(media_model)
   })
