@@ -13,7 +13,7 @@ occs_filter_by_mask <- function(this.species,mask){
   sp.temp.data.mask <- list(sp_coords = this.species$occs_data[in_mask_index,
                                                                this.species$lon_lat_vars],
                             sp_occs_year = this.species$sp_occs_year[in_mask_index],
-                            oocs_data = this.species$occs_data[in_mask_index,],
+                            occs_data = this.species$occs_data[in_mask_index,],
                             lon_lat_vars = this.species$lon_lat_vars ,
                             layers_path_by_year = this.species$layers_path_by_year)
   class(sp.temp.data.mask) <- c("list", "sp.temporal.modeling")
