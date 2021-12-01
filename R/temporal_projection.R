@@ -13,12 +13,18 @@
 #' Finally a directory called niche_comparations_results, which has barplots of the percent of area/suitabilty gained (or lost) in each year compared to \code{t_0}.
 #' @export
 temporal_projection <- function(this_species,
+                                projection_years,
                                 save_dir,sp_mask,sp_name="",
                                 crs_model=NULL, plot3d=FALSE){
   stopifnot(inherits(this_species, "sp.temp.best.model"))
   if(is.null(crs_model)) crs_model <- "+proj=lcc +lat_1=17.5 +lat_2=29.5 +lat_0=12 +lon_0=-102 +x_0=2500000 +y_0=0 +datum=WGS84 +units=m +no_defs"
-  extent_capas <- raster::extent(sp_mask)
-  projection_years <- names(this_species$layers_path_by_year)
+  #extent_capas <- raster::extent(sp_mask)
+  projection_yearsA <- names(this_species$layers_path_by_year)
+  projection_yearsU <- as.character(projection_years)
+  projection_years <- projection_yearsA[which(projection_yearsA == projection_years)]
+  if(length(projection_years) == 0L)
+    stop("No environmental data for ", projection_yearsU)
+  projection_years <- c(min(projection_yearsA),projection_years)
   projection_vars <- names(this_species$best_model_metadata$centroid)
   ellip <- this_species$best_model_metadata
   # Datos de presencia de la sp en el ambiente
@@ -189,7 +195,7 @@ temporal_projection <- function(this_species,
 
     pdf(suit_lost_plot,width = 8,height = 8)
     raster::plot(suitability_lost,col=grDevices::heat.colors(225),
-         main=paste0(year_to_search,"_",y))
+                 main=paste0(year_to_search,"_",gsub("X","",y)))
     dev.off()
     return(suit_change_df)
   })

@@ -38,6 +38,7 @@ extract_by_year <- function(this_species,layers_pattern){
   years_env <- df_occs_year %>%
     split(.$years_in_occs) %>%
     purrr::map_df(~years_env_fun(.x))
+  names(years_env)[1:2] <- this_species$lon_lat_vars
 
   train_data <- which(years_env$trian_test=="Train")
   sp.temp.data.env <- list(sp_coords = years_env[,this_species$lon_lat_vars],

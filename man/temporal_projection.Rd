@@ -7,6 +7,7 @@ The function projects the niche model for the d}
 \usage{
 temporal_projection(
   this_species,
+  projection_years,
   save_dir,
   sp_mask,
   sp_name = "",
