@@ -21,7 +21,7 @@ temporal_projection <- function(this_species,
   #extent_capas <- raster::extent(sp_mask)
   projection_yearsA <- names(this_species$layers_path_by_year)
   projection_yearsU <- as.character(projection_years)
-  projection_years <- projection_yearsA[which(projection_yearsA == projection_years)]
+  projection_years <- projection_yearsA[which(projection_yearsA %in% projection_years)]
   if(length(projection_years) == 0L)
     stop("No environmental data for ", projection_yearsU)
   projection_years <- c(min(projection_yearsA),projection_years)
@@ -195,7 +195,7 @@ temporal_projection <- function(this_species,
 
     pdf(suit_lost_plot,width = 8,height = 8)
     raster::plot(suitability_lost,col=grDevices::heat.colors(225),
-                 main=paste0(year_to_search,"_",gsub("X","",y)))
+                 main=paste0(year_to_search,"_vs_",gsub("X","",y)))
     dev.off()
     return(suit_change_df)
   })
